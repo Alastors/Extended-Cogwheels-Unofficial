@@ -8,7 +8,6 @@
 <a href="https://www.curseforge.com/minecraft/mc-mods/create-extended-cogs"><img src="https://cf.way2muchnoise.eu/739973.svg" alt="CF"></a>
 <a href="https://www.curseforge.com/minecraft/mc-mods/create-extended-cogwheels-fabric"><img src="https://cf.way2muchnoise.eu/815006.svg" alt="CF"></a>
 <a href="https://github.com/Creators-of-Create/Create/blob/master/LICENSE"><img src="https://img.shields.io/github/license/Rabbitminers/Extended-Cogwheels?style=flat&color=900c3f" alt="License"></a>
-<a href="https://discord.gg/GJsQadv9Mc"><img src="https://img.shields.io/discord/1069326955742244884?color=5865f2&label=Discord&style=flat" alt="Discord"></a>
 
 </h1>
 
