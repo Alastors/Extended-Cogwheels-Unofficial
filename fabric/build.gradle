@@ -176,7 +176,7 @@ publishMods {
     changelog = getChangelogText("Fabric", true)
     type = STABLE
 
-    version = "$mod_version-$minecraft_version-$raw_create_version-fabric"
+    version = "$mod_version-$minecraft_version-fabric"
     displayName = "Extended Cogwheels $mod_version Fabric $minecraft_version"
 
     modLoaders.add("fabric")

@@ -46,11 +46,12 @@ configurations {
 repositories {
     // mavens for Forge-exclusives
     maven { url = "https://maven.theillusivec4.top/" } // Curios
-    maven { // Create Forge and Registrate Forge
+    maven { // Flywheel, Registrate, Create
         url = "https://maven.tterrag.com/"
         content {
-            includeGroup("com.tterrag.registrate")
             includeGroup("com.simibubi.create")
+            includeGroup("com.tterrag.registrate")
+            includeGroup("com.jozufozu.flywheel")
         }
     }
     maven {
@@ -170,7 +171,7 @@ publishMods {
     changelog = getChangelogText("Forge", true)
     type = STABLE
 
-    version = "$mod_version-$minecraft_version-$raw_create_version-forge"
+    version = "$mod_version-$minecraft_version-forge"
     displayName = "Extended Cogwheels $mod_version Forge $minecraft_version"
 
     modLoaders.add("forge")
