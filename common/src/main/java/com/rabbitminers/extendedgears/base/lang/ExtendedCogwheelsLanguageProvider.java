@@ -3,7 +3,6 @@ package com.rabbitminers.extendedgears.base.lang;
 import com.google.gson.JsonElement;
 import com.rabbitminers.extendedgears.ExtendedCogwheels;
 import com.rabbitminers.extendedgears.mixin.AccessorLangMerger;
-import com.simibubi.create.foundation.data.AllLangPartials;
 import com.simibubi.create.foundation.data.LangMerger;
 import com.simibubi.create.foundation.data.LangPartial;
 import com.simibubi.create.foundation.utility.FilesHelper;
@@ -49,7 +48,7 @@ public enum ExtendedCogwheelsLanguageProvider implements LangPartial {
 
     public static <T extends LangPartial> LangMerger createMerger(PackOutput output, String modid, String displayName,
                                                                   LangPartial[] partials) {
-        LangMerger merger = new LangMerger(output, modid, displayName, new AllLangPartials[0]);
+        LangMerger merger = new LangMerger(output, modid, displayName, new LangPartial[0]);
         ((AccessorLangMerger) merger).setLangPartials(partials);
         return merger;
     }
