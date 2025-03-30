@@ -1,17 +1,28 @@
 package com.rabbitminers.extendedgears.cogwheels;
 
+import com.rabbitminers.extendedgears.registry.ExtendedCogwheelsBlocks;
 import com.rabbitminers.extendedgears.mixin_interface.CogwheelTypeProvider;
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
 import com.simibubi.create.content.kinetics.simpleRelays.CogWheelBlock;
 import com.simibubi.create.foundation.utility.VoxelShaper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
@@ -19,6 +30,9 @@ import org.jetbrains.annotations.NotNull;
 import static com.rabbitminers.extendedgears.base.util.DirectionHelpers.directionFromValue;
 import static com.rabbitminers.extendedgears.base.util.DirectionHelpers.isDirectionPositive;
 import static com.rabbitminers.extendedgears.cogwheels.legacy.LegacyHalfShaftCogwheelBlock.shapeBuilder;
+
+import com.rabbitminers.extendedgears.mixin_interface.IDynamicMaterialBlockEntity;
+import com.simibubi.create.foundation.utility.VoxelShaper;
 
 public class HalfShaftCogwheelBlock extends CogWheelBlock implements CogwheelTypeProvider {
     public VoxelShaper voxelShape = shapeBuilder(box(2.0D, 6.0D, 2.0D, 14.0D, 10.0D, 14.0D))
@@ -30,7 +44,6 @@ public class HalfShaftCogwheelBlock extends CogWheelBlock implements CogwheelTyp
 
     protected HalfShaftCogwheelBlock(boolean large, Properties properties) {
         super(large, properties);
-
         registerDefaultState(this.defaultBlockState().setValue(AXIS_DIRECTION,
                 isDirectionPositive(Direction.AxisDirection.POSITIVE)));
     }
@@ -63,7 +76,6 @@ public class HalfShaftCogwheelBlock extends CogWheelBlock implements CogwheelTyp
         return isLargeCog() ? largeVoxelShape.get(dir) : voxelShape.get(dir);
     }
 
-
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Direction direction = context.getClickedFace().getOpposite();
@@ -72,18 +84,93 @@ public class HalfShaftCogwheelBlock extends CogWheelBlock implements CogwheelTyp
         if (context.getPlayer() == null)
             return super.getStateForPlacement(context);
         return super.getStateForPlacement(context)
-                .setValue(AXIS_DIRECTION, context.getPlayer()
-                        .isShiftKeyDown() != isDirectionPosotive)
+                .setValue(AXIS_DIRECTION, context.getPlayer().isShiftKeyDown() != isDirectionPosotive)
                 .setValue(AXIS, axisFromDirection);
     }
 
     @Override
     public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
-        return face.getAxis() == state.getValue(AXIS) && face.getAxisDirection() == directionFromValue(state.getValue(AXIS_DIRECTION));
+        return face.getAxis() == state.getValue(AXIS)
+                && face.getAxisDirection() == directionFromValue(state.getValue(AXIS_DIRECTION));
     }
 
     @Override
     public CogwheelType getType() {
         return CogwheelType.HALF_SHAFT;
+    }
+
+    @Override
+    public BlockState getRotatedBlockState(BlockState originalState, Direction targetedFace) {
+        if (targetedFace.getAxis() == originalState.getValue(AXIS))
+            return originalState;
+        Direction direction = VoxelShaper.axisAsFace(originalState.getValue(AXIS));
+        if (!originalState.getValue(AXIS_DIRECTION))
+            direction = direction.getOpposite();
+        if (targetedFace.getAxisDirection() == Direction.AxisDirection.POSITIVE)
+            direction = direction.getClockWise(targetedFace.getAxis());
+        else
+            direction = direction.getCounterClockWise(targetedFace.getAxis());
+        return originalState
+                .setValue(AXIS, direction.getAxis())
+                .setValue(AXIS_DIRECTION, direction.getAxisDirection() == Direction.AxisDirection.POSITIVE);
+    }
+
+    @Override
+    public @NotNull InteractionResult use(BlockState state, Level level, BlockPos pos, Player player,
+                                          InteractionHand hand, BlockHitResult ray) {
+        if (!player.mayBuild())
+            return InteractionResult.PASS;
+        do {
+            if (level.isClientSide)
+                break;
+            BlockState newState;
+            boolean isConsumable = true;
+            boolean isLarge = this.isLargeCog();
+            ItemStack heldItem = player.getItemInHand(hand);
+            if (heldItem.is(AllItems.ANDESITE_ALLOY.get())) {
+                Direction blankFace = Direction.get(
+                        state.getValue(AXIS_DIRECTION) ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE,
+                        state.getValue(AXIS)
+                );
+                if (blankFace != ray.getDirection())
+                    break;
+                newState = isLarge ? AllBlocks.LARGE_COGWHEEL.getDefaultState()
+                        : AllBlocks.COGWHEEL.getDefaultState();
+            } else if (heldItem.is(AllItems.WRENCH.get())) {
+                Direction shaftedFace = Direction.get(
+                        state.getValue(AXIS_DIRECTION) ? Direction.AxisDirection.POSITIVE : Direction.AxisDirection.NEGATIVE,
+                        state.getValue(AXIS)
+                );
+                if (shaftedFace != ray.getDirection())
+                    break;
+                newState = isLarge ? ExtendedCogwheelsBlocks.LARGE_SHAFTLESS_COGWHEEL.getDefaultState()
+                        : ExtendedCogwheelsBlocks.SHAFTLESS_COGWHEEL.getDefaultState();
+                isConsumable = false;
+            } else break;
+
+            newState = newState.setValue(AXIS, state.getValue(AXIS))
+                    .setValue(WATERLOGGED, state.getValue(WATERLOGGED));
+
+            BlockEntity oldBe = level.getBlockEntity(pos);
+            if (!(oldBe instanceof IDynamicMaterialBlockEntity oldDyn))
+                return InteractionResult.FAIL;
+            ResourceLocation material = oldDyn.getMaterial();
+            level.setBlock(pos, newState, 3);
+
+            if (!player.isCreative()) {
+                if (heldItem.is(AllItems.ANDESITE_ALLOY.get()))
+                    heldItem.shrink(1);
+                else if (heldItem.is(AllItems.WRENCH.get()))
+                    player.addItem(new ItemStack(AllItems.ANDESITE_ALLOY.get()));
+            }
+
+            BlockEntity be = level.getBlockEntity(pos);
+            if (!(be instanceof IDynamicMaterialBlockEntity newDyn))
+                return InteractionResult.FAIL;
+            newDyn.applyMaterial(material);
+
+            return InteractionResult.SUCCESS;
+        } while (false);
+        return super.use(state, level, pos, player, hand, ray);
     }
 }
