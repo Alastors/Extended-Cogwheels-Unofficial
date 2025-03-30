@@ -11,7 +11,6 @@ loom {
         mixinConfig("extendedgears.mixins.json")
 
         convertAccessWideners = true
-        extraAccessWideners.add loom.accessWidenerPath.get().asFile.name
     }
 
     runs {
@@ -59,6 +58,9 @@ repositories {
         content {
             includeGroup "curse.maven"
         }
+    }
+    flatDir {
+        dirs 'libs'
     }
 }
 

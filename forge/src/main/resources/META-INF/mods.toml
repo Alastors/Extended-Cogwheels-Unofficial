@@ -1,13 +1,13 @@
 modLoader = "javafml"
 loaderVersion = "[${forge_version},)"
 #issueTrackerURL = ""
-license = "GNU GPLv3"
+license = "MIT"
 
 [[mods]]
 modId = "extendedgears"
 version = "${version}"
-displayName = "Extended Cogwheels"
-authors = "Rabbitminers"
+displayName = "Extended Cogwheels Unofficial"
+authors = "Alastors"
 description = '''
 A small mod adding more cogs to the create mod
 '''

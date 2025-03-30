@@ -1,6 +1,9 @@
 {
   "team": [
     {
+      "id": "fc56cfa8-fe1e-4ed0-bef6-bf1782da84c4",
+      "name": "Alastors_Game"
+    },{
       "id": "7102222d-b551-46e6-b1cf-44a67a05aace",
       "name": "Rabbitminers"
     },

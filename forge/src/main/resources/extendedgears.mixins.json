@@ -1,14 +1,13 @@
 {
-  "required": true,
-  "minVersion": "0.8",
-  "package": "com.rabbitminers.extendedgears.mixin.forge",
-  "compatibilityLevel": "JAVA_17",
-  "client": [
-    "MixinClientPacketListener"
-  ],
-  "mixins": [
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  }
+    "required": true,
+    "minVersion": "0.8",
+    "package": "com.rabbitminers.extendedgears.mixin.forge",
+    "compatibilityLevel": "JAVA_17",
+    "client": [
+        "MixinClientPacketListener"
+    ],
+    "mixins": [],
+    "injectors": {
+        "defaultRequire": 1
+    }
 }

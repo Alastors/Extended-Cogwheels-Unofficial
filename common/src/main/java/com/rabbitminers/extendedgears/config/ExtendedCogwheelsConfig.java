@@ -82,7 +82,7 @@ public class ExtendedCogwheelsConfig {
 
     private static void preloadValues() {
         Path configDir = Utils.configDir();
-        Path commonConfig = configDir.resolve(ExtendedCogwheels.MOD_ID+"-common.toml");
+        Path commonConfig = configDir.resolve(ExtendedCogwheels.MOD_ID+"-unofficial-common.toml");
         try (Reader reader = new FileReader(commonConfig.toFile())) {
             CommentedConfig config = new TomlParser().parse(reader);
 
@@ -93,6 +93,10 @@ public class ExtendedCogwheelsConfig {
 
         if (cachedDisableDatafixer == null)
             cachedDisableDatafixer = false;
+    }
+
+    public static boolean getRenderCasings() {
+        return common != null && common.renderCasings.get();
     }
 
 }

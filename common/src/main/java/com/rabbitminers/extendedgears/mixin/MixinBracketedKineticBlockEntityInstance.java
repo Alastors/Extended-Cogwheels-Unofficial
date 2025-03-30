@@ -7,21 +7,26 @@ import com.jozufozu.flywheel.core.model.BlockModel;
 import com.jozufozu.flywheel.util.transform.TransformStack;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.rabbitminers.extendedgears.cogwheels.CogwheelModelKey;
-import com.rabbitminers.extendedgears.cogwheels.HalfShaftCogwheelBlock;
 import com.rabbitminers.extendedgears.cogwheels.DynamicCogwheelRenderer;
+import com.rabbitminers.extendedgears.cogwheels.HalfShaftCogwheelBlock;
 import com.rabbitminers.extendedgears.mixin_interface.CogwheelTypeProvider;
 import com.rabbitminers.extendedgears.mixin_interface.IDynamicMaterialBlockEntity;
-import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.simibubi.create.content.kinetics.base.RotatedPillarKineticBlock;
 import com.simibubi.create.content.kinetics.base.SingleRotatingInstance;
 import com.simibubi.create.content.kinetics.base.flwdata.RotatingData;
-import com.simibubi.create.content.kinetics.simpleRelays.*;
+import com.simibubi.create.content.kinetics.simpleRelays.BracketedKineticBlockEntity;
+import com.simibubi.create.content.kinetics.simpleRelays.BracketedKineticBlockEntityInstance;
+import com.simibubi.create.content.kinetics.simpleRelays.BracketedKineticBlockEntityRenderer;
+import com.simibubi.create.content.kinetics.simpleRelays.CogWheelBlock;
+import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import com.simibubi.create.foundation.render.CachedBufferer;
+import com.simibubi.create.foundation.utility.RegisteredObjects;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.AxisDirection;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -50,11 +55,15 @@ public abstract class MixinBracketedKineticBlockEntityInstance extends SingleRot
 
     @Inject(method = "<init>", at = @At("TAIL"))
     public void onInit(MaterialManager materialManager, BracketedKineticBlockEntity blockEntity, CallbackInfo ci) {
-        if (blockEntity instanceof IDynamicMaterialBlockEntity dynamicMaterialBlockEntity &&
-                !blockEntity.getBlockState().is(AllBlocks.SHAFT.get())) {
-            this.large = ICogWheel.isLargeCog(blockState);
-            this.key = new CogwheelModelKey(large, getRenderedBlockState(), dynamicMaterialBlockEntity.getMaterial());
-        }
+        if (!(blockEntity instanceof IDynamicMaterialBlockEntity dynamicMaterialBlockEntity))
+            return;
+
+        // 🛑 Prevent running this logic on anything that's not a cogwheel
+        if (!(blockEntity.getBlockState().getBlock() instanceof ICogWheel) || !RegisteredObjects.getKeyOrThrow(blockEntity.getBlockState().getBlock()).getNamespace().equals("extendedgears"))
+            return;
+
+        this.large = ICogWheel.isLargeCog(blockState);
+        this.key = new CogwheelModelKey(large, getRenderedBlockState(), dynamicMaterialBlockEntity.getMaterial());
     }
 
     /**
@@ -124,6 +133,12 @@ public abstract class MixinBracketedKineticBlockEntityInstance extends SingleRot
     protected Instancer<RotatingData> getModel() {
         if (key == null)
             return super.getModel();
+
+        Block block = key.state().getBlock();
+        ResourceLocation keyId = RegisteredObjects.getKeyOrThrow(block);
+        if (!(block instanceof ICogWheel) || !RegisteredObjects.getKeyOrThrow(block).getNamespace().equals("extendedgears"))
+            return super.getModel();
+
         return getRotatingMaterial().model(key, () -> {
             BakedModel model = DynamicCogwheelRenderer.generateModel(key);
             BlockState state = key.state();

@@ -12,5 +12,5 @@ include("common")
 include("fabric")
 include("forge")
 
-rootProject.name = "extended-cogwheels"
+rootProject.name = "extended-cogwheels-unofficial"
 

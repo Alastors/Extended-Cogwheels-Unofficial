@@ -10,10 +10,10 @@ import com.simibubi.create.content.kinetics.base.RotatedPillarKineticBlock;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import com.simibubi.create.content.kinetics.simpleRelays.SimpleKineticBlockEntity;
 import com.simibubi.create.content.kinetics.simpleRelays.encased.EncasedCogRenderer;
-import com.simibubi.create.content.kinetics.simpleRelays.encased.EncasedCogwheelBlock;
 import com.simibubi.create.foundation.render.BakedModelRenderHelper;
 import com.simibubi.create.foundation.render.CachedBufferer;
 import com.simibubi.create.foundation.render.SuperByteBuffer;
+import com.simibubi.create.foundation.utility.RegisteredObjects;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
@@ -35,7 +35,15 @@ public class MixinEncasedCogRenderer extends KineticBlockEntityRenderer<SimpleKi
     @Inject(method = "renderSafe(Lcom/simibubi/create/content/kinetics/simpleRelays/SimpleKineticBlockEntity;FLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;II)V", at = @At("TAIL"))
     public void renderCasing(SimpleKineticBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer,
                              int light, int overlay, CallbackInfo ci) {
-        SuperByteBuffer casing = CachedBufferer.block(be.getBlockState());
+        BlockState state = be.getBlockState();
+
+        if (!(be instanceof IDynamicMaterialBlockEntity) ||
+                !(state.getBlock() instanceof ICogWheel) ||
+                !RegisteredObjects.getKeyOrThrow(state.getBlock()).getNamespace().equals("extendedgears")) {
+            return;
+        }
+
+        SuperByteBuffer casing = CachedBufferer.block(state);
         casing.renderInto(ms, buffer.getBuffer(RenderType.solid()));
     }
 
@@ -43,6 +51,10 @@ public class MixinEncasedCogRenderer extends KineticBlockEntityRenderer<SimpleKi
     protected SuperByteBuffer getRotatedModel(SimpleKineticBlockEntity be, BlockState state) {
         if (!(be instanceof IDynamicMaterialBlockEntity dmbe))
             return super.getRotatedModel(be, state);
+
+        if (!(state.getBlock() instanceof ICogWheel) || !RegisteredObjects.getKeyOrThrow(state.getBlock()).getNamespace().equals("extendedgears")) {
+            return super.getRotatedModel(be, state);
+        }
 
         boolean large = be.getBlockState().getBlock() instanceof ICogWheel cogWheel && cogWheel.isLargeCog();
         CogwheelModelKey key = new CogwheelModelKey(large, state, dmbe.getMaterial());

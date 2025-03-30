@@ -16,6 +16,7 @@ import com.simibubi.create.foundation.render.BakedModelRenderHelper;
 import com.simibubi.create.foundation.render.CachedBufferer;
 import com.simibubi.create.foundation.render.SuperByteBuffer;
 
+import com.simibubi.create.foundation.utility.RegisteredObjects;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
@@ -35,6 +36,10 @@ public class MixinBracketedKineticBlockEntityRenderer extends KineticBlockEntity
     protected SuperByteBuffer getRotatedModel(BracketedKineticBlockEntity be, BlockState state) {
         if (!(be instanceof IDynamicMaterialBlockEntity dmbe))
             return super.getRotatedModel(be, state);
+
+        if (!(state.getBlock() instanceof ICogWheel) || !RegisteredObjects.getKeyOrThrow(state.getBlock()).getNamespace().equals("extendedgears")) {
+            return super.getRotatedModel(be, state);
+        }
 
         boolean large = be.getBlockState().getBlock() instanceof ICogWheel cogWheel && cogWheel.isLargeCog();
         CogwheelModelKey key = new CogwheelModelKey(large, state, dmbe.getMaterial());
