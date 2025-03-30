@@ -76,8 +76,6 @@ allprojects {
     archivesBaseName = rootProject.archives_base_name
     group = rootProject.maven_group
 
-    // Mod version - Minecraft Version - Create Version - Loader
-    // e.g 2.1.0-1.18.2-0.5.1-fabric
     String buildNumber = System.getenv("GITHUB_RUN_NUMBER")
     version = "${mod_version}-${minecraft_version}-${project.name}" + (buildNumber != null ? "-${buildNumber}" : "")
 
@@ -90,6 +88,9 @@ allprojects {
     }
 
     java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
         withSourcesJar()
     }
 

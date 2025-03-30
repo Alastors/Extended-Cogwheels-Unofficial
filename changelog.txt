@@ -5,3 +5,10 @@ v2.2.0:
 - Removed encasing on the shaftless/half shafted gears, the regular gear can do so now, will return in the future
 - Preparing for v3.0.0 for Create v6
 - May or may not bring back the individualized gears
+
+v2.2.1:
+- Added functionality from Costena
+- Added the ability to place andesite alloy directly onto shaftless and half-shaft gears to add half shafts per piece
+- Added the ability to wrench shafted gears to turn them into unshafted gears
+- Added a fix from Costena
+- Fixed the compiler to move it back to Java 17, sorry guys my bad.s
