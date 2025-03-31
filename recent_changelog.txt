@@ -12,3 +12,6 @@ v2.2.1:
 - Added the ability to wrench shafted gears to turn them into unshafted gears
 - Added a fix from Costena
 - Fixed the compiler to move it back to Java 17, sorry guys my bad.
+
+v2.2.2
+- Fixed the encased cogwheels spinning on the wrong plane, oops

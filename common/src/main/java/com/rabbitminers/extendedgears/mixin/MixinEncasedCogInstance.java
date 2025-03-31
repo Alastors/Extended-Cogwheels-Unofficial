@@ -12,13 +12,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.rabbitminers.extendedgears.cogwheels.CogwheelModelKey;
 import com.rabbitminers.extendedgears.cogwheels.DynamicCogwheelRenderer;
 import com.rabbitminers.extendedgears.mixin_interface.IDynamicMaterialBlockEntity;
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityInstance;
 import com.simibubi.create.content.kinetics.base.flwdata.RotatingData;
 import com.simibubi.create.content.kinetics.simpleRelays.ICogWheel;
 import com.simibubi.create.content.kinetics.simpleRelays.encased.EncasedCogInstance;
 import com.simibubi.create.foundation.render.CachedBufferer;
-import com.simibubi.create.foundation.utility.RegisteredObjects;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Blocks;
@@ -55,15 +55,10 @@ public class MixinEncasedCogInstance extends KineticBlockEntityInstance<KineticB
     @Inject(method = "<init>", at = @At("TAIL"))
     public void onInit(MaterialManager modelManager, KineticBlockEntity blockEntity, boolean large, CallbackInfo ci) {
         this.blockEntity = blockEntity;
-        if (!(blockEntity instanceof IDynamicMaterialBlockEntity dynamicMaterialBlockEntity))
-            return;
-
-        if (!(blockEntity.getBlockState().getBlock() instanceof ICogWheel) || !RegisteredObjects.getKeyOrThrow(blockEntity.getBlockState().getBlock()).getNamespace().equals("extendedgears")) {
-            return;
+        if (blockEntity instanceof IDynamicMaterialBlockEntity dynamicMaterialBlockEntity && !blockEntity.getBlockState().is(AllBlocks.SHAFT.get())) {
+            this.large = blockEntity.getBlockState().getBlock() instanceof ICogWheel cogWheel && cogWheel.isLargeCog();
+            this.key = new CogwheelModelKey(large, blockEntity.getBlockState(), dynamicMaterialBlockEntity.getMaterial());
         }
-
-        this.large = ((ICogWheel) blockEntity.getBlockState().getBlock()).isLargeCog();
-        this.key = new CogwheelModelKey(large, blockEntity.getBlockState(), dynamicMaterialBlockEntity.getMaterial());
     }
 
     @Inject(method = "init", at = @At("HEAD"), remap = false)
@@ -75,10 +70,10 @@ public class MixinEncasedCogInstance extends KineticBlockEntityInstance<KineticB
         TransformStack msr = TransformStack.cast(msLocal);
         msr.translate(getInstancePosition());
 
-        // 🛠 Slight offset to avoid Z-fighting with internal cogwheel
+        // Slight offset to avoid Z-fighting with internal cogwheel
         msr.translate(0.001f, 0.001f, 0.001f);
 
-        // 🛠 Optional: shrink slightly so it's not identical size
+        // Shrink slightly so it's not identical size
         msr.scale(0.9995f);
 
         casing.setTransform(msLocal);
@@ -100,10 +95,7 @@ public class MixinEncasedCogInstance extends KineticBlockEntityInstance<KineticB
     )
     public Instancer<RotatingData> changeCogwheelModel(Material<RotatingData> instance, PartialModel partial, BlockState referenceState,
                Direction dir, Supplier<PoseStack> modelTransform) {
-        if (key == null || !(key.state().getBlock() instanceof ICogWheel) ||
-                !RegisteredObjects.getKeyOrThrow(key.state().getBlock()).getNamespace().equals("extendedgears")) {
-            return instance.getModel(partial);
-        }
+        if (key == null) return instance.getModel(partial);
         return instance.model(key, () -> {
             BakedModel model = DynamicCogwheelRenderer.generateModel(key);
             PoseStack transform = CachedBufferer.rotateToFaceVertical(dir).get();
